@@ -1,0 +1,13 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: spot-render-argo
+  description: Argo Workflows and Blender worker images that process render jobs.
+  tags:
+    - argo
+    - blender
+spec:
+  type: job
+  lifecycle: experimental
+  owner: group:spot-render-team
+  system: spot-render
