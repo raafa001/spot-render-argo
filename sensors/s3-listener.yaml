@@ -1,0 +1,13 @@
+apiVersion: triggers.argoproj.io/v1alpha1
+kind: EventSource
+metadata:
+  name: s3-source
+  namespace: rendering
+spec:
+  s3:
+    render-input:
+      endpoint: s3.amazonaws.com
+      bucket: spot-render-input
+      events:
+        - s3:ObjectCreated:*
+      insecure: false

@@ -1,0 +1,56 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: render-workflow
+  namespace: rendering
+spec:
+  entrypoint: render
+  templates:
+    - name: render
+      inputs:
+        parameters:
+          - name: bucket
+          - name: key
+          - name: project
+          - name: artist
+      steps:
+        - - name: fetch
+            template: fetch-input
+        - - name: convert
+            template: convert-materials
+        - - name: render
+            template: render-blender
+        - - name: record
+            template: record-metrics
+
+    - name: fetch-input
+      container:
+        image: amazon/aws-cli
+        command: ["sh", "-c"]
+        args:
+          - aws s3 cp s3://{{inputs.parameters.bucket}}/{{inputs.parameters.key}} /data/input.blend
+        volumeMounts:
+          - name: data
+            mountPath: /data
+
+    - name: convert-materials
+      container:
+        image: 000000000000.dkr.ecr.us-east-1.amazonaws.com/spot-render-worker:latest
+        command: ["python", "/scripts/convert_materials.py", "/data/input.blend"]
+        volumeMounts:
+          - name: data
+            mountPath: /data
+    - name: render-blender
+      container:
+        image: 000000000000.dkr.ecr.us-east-1.amazonaws.com/spot-render-worker:latest
+        command: ["python", "/scripts/render_blender.py", "/data/input.blend"]
+        volumeMounts:
+          - name: data
+            mountPath: /data
+    - name: record-metrics
+      container:
+        image: python:3.12-slim
+        command: ["python", "-c", "print('record metrics placeholder')"]
+  volumes:
+    - name: data
+      emptyDir: {}
