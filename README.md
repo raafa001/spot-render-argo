@@ -25,3 +25,25 @@ k8s/
 ### Observabilidade
 
 Os scripts emitirão logs estruturados e sinais para o exporter Prometheus (spots registrados em `spot-render-observability`).
+
+### Tecnologias
+- Argo Workflows + EventSource/Sensor  
+- Blender headless  
+- Python scripts (conversão/render)  
+- Docker/ECR  
+- GitHub Actions (lint + build/push)  
+- Namespaces `rendering` (workflows) e `spot-render` (serviços).
+
+### Métricas & Alertas
+- Cada etapa pode publicar métricas via exporter (`render_success_total`, `render_error_total`, `render_duration_seconds`).  
+- Para adicionar novas métricas, envie eventos HTTP para o exporter ou grave linhas no formato `METRIC=value` consumidas por `spot-render-observability`.  
+- Alertas de canário são herdados do Rollout da API/Portal; para alertas específicos do workflow (ex.: falhas consecutivas), utilize `WorkflowEventBinding` e Prometheus rules.
+
+### Testes locais
+- Use `spot-render-teste-local` para instalar o Argo Workflows/Events no cluster local.  
+- Execute `make build-worker` para gerar a imagem e `kind load docker-image` antes de aplicar `workflows/render.yaml`.  
+- Configure variáveis `AWS_REGION`, `S3_*` via Secrets/ConfigMap localmente ou utilize MinIO conforme o README do repositório de teste.  
+- Para validar sem Blender real, substitua o comando por `sleep` no YAML de desenvolvimento.
+
+### TechDocs
+- Documentação detalhada em `docs/index.md` + `mkdocs.yml` para publicação no Backstage.
