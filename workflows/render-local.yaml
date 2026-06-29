@@ -43,7 +43,7 @@ spec:
         parameters:
           - name: key
       container:
-        image: 000000000000.dkr.ecr.us-east-1.amazonaws.com/spot-render-worker:latest
+        image: 000000000000.dkr.ecr.us-east-1.amazonaws.com/spot-render-worker:sha-PLACEHOLDER
         command: ["python", "/scripts/convert_materials.py", "/storage/{{inputs.parameters.key}}"]
         volumeMounts:
           - name: render-storage
@@ -54,7 +54,7 @@ spec:
           - name: key
           - name: project
       container:
-        image: 000000000000.dkr.ecr.us-east-1.amazonaws.com/spot-render-worker:latest
+        image: 000000000000.dkr.ecr.us-east-1.amazonaws.com/spot-render-worker:sha-PLACEHOLDER
         command: ["python", "/scripts/render_blender.py", "/storage/{{inputs.parameters.key}}", "/storage/output/{{inputs.parameters.project}}"]
         volumeMounts:
           - name: render-storage

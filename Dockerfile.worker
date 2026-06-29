@@ -1,7 +1,31 @@
-FROM blender:3.6.0
+FROM python:3.11-slim AS runtime
 
-RUN apt-get update && apt-get install -y python3 python3-pip && rm -rf /var/lib/apt/lists/*
+ARG BLENDER_MAJOR=3.6
+ARG BLENDER_VERSION=3.6.9
+ENV BLENDER_HOME=/opt/blender-${BLENDER_VERSION}-linux-x64
+
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+    ca-certificates \
+    curl \
+    xz-utils \
+    libgl1 \
+    libxi6 \
+    libxrender1 \
+    libxxf86vm1 \
+    libxfixes3 \
+    libsm6 \
+    libxext6 \
+    libxkbcommon0 \
+    libglu1-mesa && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN curl -fsSLo /tmp/blender.tar.xz https://download.blender.org/release/Blender${BLENDER_MAJOR}/blender-${BLENDER_VERSION}-linux-x64.tar.xz \
+    && mkdir -p /opt \
+    && tar -xf /tmp/blender.tar.xz -C /opt \
+    && ln -s ${BLENDER_HOME}/blender /usr/local/bin/blender \
+    && rm /tmp/blender.tar.xz
 
 COPY scripts /scripts
+ENV PATH="${BLENDER_HOME}:${PATH}"
 
 ENTRYPOINT ["sleep", "infinity"]
