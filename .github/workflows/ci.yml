@@ -7,6 +7,8 @@ on:
 jobs:
   lint-and-build:
     runs-on: ubuntu-24.04
+    env:
+      WORKER_IMAGE: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/spot-render-worker:${{ github.sha }}
     steps:
       - uses: actions/checkout@v4
       - name: Yamllint
@@ -17,4 +19,19 @@ jobs:
         with:
           file: Dockerfile.worker
           push: true
-          tags: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/spot-render-worker:${{ github.sha }}
+          tags: ${{ env.WORKER_IMAGE }}
+      - uses: azure/setup-kubectl@v4
+        with:
+          version: v1.30.0
+      - name: Deploy Workflow Templates
+        if: github.ref == 'refs/heads/main'
+        env:
+          KUBECONFIG: ${{ secrets.KUBECONFIG }}
+        run: |
+          set -euo pipefail
+          tmp_render=$(mktemp)
+          tmp_render_local=$(mktemp)
+          sed "s|sha-PLACEHOLDER|sha-${{ github.sha }}|g" workflows/render.yaml > "$tmp_render"
+          sed "s|sha-PLACEHOLDER|sha-${{ github.sha }}|g" workflows/render-local.yaml > "$tmp_render_local"
+          kubectl apply -f "$tmp_render"
+          kubectl apply -f "$tmp_render_local"
