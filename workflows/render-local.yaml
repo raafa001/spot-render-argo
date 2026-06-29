@@ -1,0 +1,61 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: render-workflow-local
+  namespace: rendering
+spec:
+  entrypoint: render
+  arguments:
+    parameters:
+      - name: key
+      - name: project
+      - name: artist
+      - name: variation
+  templates:
+    - name: render
+      inputs:
+        parameters:
+          - name: key
+          - name: project
+          - name: artist
+          - name: variation
+      volumes:
+        - name: render-storage
+          persistentVolumeClaim:
+            claimName: spot-render-storage
+      steps:
+        - - name: convert
+            template: convert-materials
+            arguments:
+              parameters:
+                - name: key
+                  value: "{{inputs.parameters.key}}"
+        - - name: render
+            template: render-blender
+            arguments:
+              parameters:
+                - name: key
+                  value: "{{inputs.parameters.key}}"
+                - name: project
+                  value: "{{inputs.parameters.project}}"
+    - name: convert-materials
+      inputs:
+        parameters:
+          - name: key
+      container:
+        image: 000000000000.dkr.ecr.us-east-1.amazonaws.com/spot-render-worker:latest
+        command: ["python", "/scripts/convert_materials.py", "/storage/{{inputs.parameters.key}}"]
+        volumeMounts:
+          - name: render-storage
+            mountPath: /storage
+    - name: render-blender
+      inputs:
+        parameters:
+          - name: key
+          - name: project
+      container:
+        image: 000000000000.dkr.ecr.us-east-1.amazonaws.com/spot-render-worker:latest
+        command: ["python", "/scripts/render_blender.py", "/storage/{{inputs.parameters.key}}", "/storage/output/{{inputs.parameters.project}}"]
+        volumeMounts:
+          - name: render-storage
+            mountPath: /storage
