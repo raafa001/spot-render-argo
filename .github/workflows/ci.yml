@@ -20,7 +20,7 @@ jobs:
           file: Dockerfile.worker
           push: true
           tags: ${{ env.WORKER_IMAGE }}
-      - uses: azure/setup-kubectl@v4
+      - uses: azure/setup-kubectl@v5
         with:
           version: v1.30.0
       - name: Deploy Workflow Templates
