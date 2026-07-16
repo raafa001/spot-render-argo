@@ -10,7 +10,7 @@ jobs:
     env:
       WORKER_IMAGE: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/spot-render-worker:${{ github.sha }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Yamllint
         run: pip install yamllint && yamllint workflows scripts
       - uses: docker/setup-buildx-action@v3
