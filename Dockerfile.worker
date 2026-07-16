@@ -1,4 +1,12 @@
-FROM python:3.11-slim AS runtime
+# syntax=docker/dockerfile:1.7-labs
+
+ARG PYTHON_VERSION=3.11
+
+FROM python:${PYTHON_VERSION}-slim AS runtime
+
+# Criar usuário não-root
+RUN groupadd --system --gid 1001 worker && \
+    useradd --system --uid 1001 --gid worker worker
 
 ARG BLENDER_MAJOR=3.6
 ARG BLENDER_VERSION=3.6.9
@@ -27,5 +35,8 @@ RUN curl -fsSLo /tmp/blender.tar.xz https://download.blender.org/release/Blender
 
 COPY scripts /scripts
 ENV PATH="${BLENDER_HOME}:${PATH}"
+
+# Trocar para usuário não-root
+USER worker
 
 ENTRYPOINT ["sleep", "infinity"]
